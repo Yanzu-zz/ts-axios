@@ -1,15 +1,18 @@
 import xhr from './xhr'
-import { AxiosRequestConfig } from './types'
 import { buildURL } from './helpers/url'
-import { transformRequest } from './helpers/data'
 import { processHeaders } from './helpers/headers'
+import { transformRequest, transformResponse } from './helpers/data'
+import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from './types'
 
-function axios(config: AxiosRequestConfig): void {
+function axios(config: AxiosRequestConfig): AxiosPromise {
   // 在正式发送请求前先处理（转化）所有数据成指定的格式
   processConfig(config)
 
   // 向服务器发送请求！！！
-  xhr(config)
+  // 并且返回的是 AxiosPromise 类型，这样我们的整个函数就实现 Promise 化了
+  return xhr(config).then(res => {
+    return transformResponseData(res)
+  })
 }
 
 // 处理所有 config 的函数
@@ -36,6 +39,11 @@ function transformHeaders(config: AxiosRequestConfig): any {
   // headers是可选参数，所以要赋个默认值，防止处理逻辑出错
   const { headers = {}, data } = config
   return processHeaders(headers, data)
+}
+
+function transformResponseData(res: AxiosResponse): AxiosResponse {
+  res.data = transformResponse(res.data)
+  return res
 }
 
 export default axios

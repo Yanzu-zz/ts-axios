@@ -29,3 +29,31 @@ export function processHeaders(headers: any, data: any): any {
 
   return headers
 }
+
+/**
+ * 解析服务器返回响应的headers字符串，变成我们想要的对象格式
+ * @param headers 传入的待解析headers字符串
+ */
+export function parseHeaders(headers: string): any {
+  let parsed = Object.create(null)
+  if (!headers) {
+    return parsed
+  }
+
+  // 每一行就是一个对象，我们按照 XXX: YYY 的原始格式进行分割、赋值操作
+  headers.split('\r\n').forEach(line => {
+    let [key, val] = line.split(':')
+    key = key.trim().toLowerCase()
+    if (!key) {
+      return // forEach里面使用 return 相当于 continue 作用
+    }
+
+    if (val) {
+      val = val.trim()
+    }
+
+    parsed[key] = val
+  })
+
+  return parsed
+}
