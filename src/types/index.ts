@@ -24,6 +24,8 @@ export interface AxiosRequestConfig {
   headers?: any
   responseType?: XMLHttpRequestResponseType
   timeout?: number
+
+  [propName: string]: any
 }
 
 // 发送请求完毕后，接收响应的数据格式接口
@@ -48,6 +50,12 @@ export interface AxiosError extends Error {
 }
 
 export interface Axios {
+  defaults: AxiosRequestConfig
+  interceptors: {
+    request: AxiosInterceptorManager<AxiosRequestConfig>
+    response: AxiosInterceptorManager<AxiosResponse>
+  }
+
   request<T = any>(config: AxiosRequestConfig): AxiosPromise<T>
 
   get<T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>
@@ -65,4 +73,21 @@ export interface AxiosInstance extends Axios {
   <T = any>(config: AxiosRequestConfig): AxiosPromise<T>
 
   <T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>
+}
+
+// 拦截器对外接口
+export interface AxiosInterceptorManager<T> {
+  // 添加一个拦截器
+  use(soloved: ResolvedFn<T>, rejected?: RejectedFn): number
+  // 删除一个拦截器
+  eject(id: number): void
+}
+
+// 每一次链式处理完毕后返回的数据类型定义
+export interface ResolvedFn<T> {
+  (val: T): T | Promise<T>
+}
+
+export interface RejectedFn {
+  (error: any): any
 }

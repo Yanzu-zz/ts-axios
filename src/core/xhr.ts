@@ -25,7 +25,7 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
 
     // 注意，这函数是处理 服务器已接收到发送的请求，并响应传回来的 数据
     request.onreadystatechange = function headleLoad() {
-      // readyState 不是4的话就没有接受到
+      // readyState 不是 4 的话就没有接收到
       if (request.readyState !== 4) {
         return
       }

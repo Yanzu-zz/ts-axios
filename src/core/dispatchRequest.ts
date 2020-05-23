@@ -1,6 +1,6 @@
 import xhr from './xhr'
 import { buildURL } from '../helpers/url'
-import { processHeaders } from '../helpers/headers'
+import { processHeaders, flattenheaders } from '../helpers/headers'
 import { transformRequest, transformResponse } from '../helpers/data'
 import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from '../types'
 
@@ -21,6 +21,7 @@ function processConfig(config: AxiosRequestConfig): void {
   // 需要先处理headers，不然处理data时会把data变成JSON格式，后面逻辑会出错
   config.headers = transformHeaders(config)
   config.data = transformRequestData(config)
+  config.headers = flattenheaders(config.headers, config.method!)
 }
 
 // 调用 url.ts 定义好的处理 url 格式函数
