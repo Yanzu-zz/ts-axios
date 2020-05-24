@@ -1,10 +1,14 @@
 import xhr from './xhr'
 import { buildURL } from '../helpers/url'
-import { processHeaders, flattenheaders } from '../helpers/headers'
-import { transformRequest, transformResponse } from '../helpers/data'
+import { flattenheaders } from '../helpers/headers'
+// import { transformRequest, transformResponse } from '../helpers/data'
 import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from '../types'
+import transform from './transform'
 
 export default function dispatchRequest(config: AxiosRequestConfig): AxiosPromise {
+  // 请求前判断之前是否取消了请求
+  throwIfCancellationRequested(config)
+
   // 在正式发送请求前先处理（转化）所有数据成指定的格式
   processConfig(config)
 
@@ -19,8 +23,8 @@ export default function dispatchRequest(config: AxiosRequestConfig): AxiosPromis
 function processConfig(config: AxiosRequestConfig): void {
   config.url = transformURL(config)
   // 需要先处理headers，不然处理data时会把data变成JSON格式，后面逻辑会出错
-  config.headers = transformHeaders(config)
-  config.data = transformRequestData(config)
+  // config.headers = processHeaders(config)
+  config.data = transform(config.data, config.headers, config.transformRequest)
   config.headers = flattenheaders(config.headers, config.method!)
 }
 
@@ -31,18 +35,24 @@ function transformURL(config: AxiosRequestConfig): string {
 }
 
 // 转化需要发送的 data 数据，变成 xhr 发送需要的格式
-function transformRequestData(config: AxiosRequestConfig): any {
-  return transformRequest(config.data)
-}
+// function transformRequestData(config: AxiosRequestConfig): any {
+//   return transformRequest(config.data)
+// }
 
 // 当传入 headers 时的处理辅助函数
-function transformHeaders(config: AxiosRequestConfig): any {
-  // headers是可选参数，所以要赋个默认值，防止处理逻辑出错
-  const { headers = {}, data } = config
-  return processHeaders(headers, data)
-}
+// function transformHeaders(config: AxiosRequestConfig): any {
+//   // headers是可选参数，所以要赋个默认值，防止处理逻辑出错
+//   const { headers = {}, data } = config
+//   return processHeaders(headers, data)
+// }
 
 function transformResponseData(res: AxiosResponse): AxiosResponse {
-  res.data = transformResponse(res.data)
+  res.data = transform(res.data, res.headers, res.config.transformResponse)
   return res
+}
+
+function throwIfCancellationRequested(config: AxiosRequestConfig): void {
+  if (config.cancelToken) {
+    config.cancelToken.throwIfRequested()
+  }
 }
