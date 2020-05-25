@@ -1,6 +1,11 @@
 // helper 文件夹主要是存放 工具函数、辅助函数
 import { isDate, isPlainObject } from './util'
 
+interface URLOrigin {
+  protocol: string
+  host: string
+}
+
 // 自定义的 encode 函数
 function encode(val: string): string {
   // 先调用自带的函数，再进行自定义的操作
@@ -74,4 +79,25 @@ export function buildURL(url: string, params?: any): string {
   }
 
   return url
+}
+
+export function isURLSameOrigin(requestURL: string): boolean {
+  const parsedOrigin = resolveURL(requestURL)
+  return (
+    parsedOrigin.protocol === currentOrigin.protocol && parsedOrigin.host === currentOrigin.host
+  )
+}
+
+// 利用 a 标签来判断两个 url 是否是同一个 protocol 和 host
+const urlParsingNode = document.createElement('a')
+const currentOrigin = resolveURL(window.location.href)
+
+function resolveURL(url: string): URLOrigin {
+  urlParsingNode.setAttribute('href', url)
+  const { protocol, host } = urlParsingNode
+
+  return {
+    protocol,
+    host
+  }
 }

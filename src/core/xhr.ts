@@ -2,12 +2,25 @@
 import { parseHeaders } from '../helpers/headers'
 import { createError } from '../helpers/error'
 import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from '../types'
+import { isURLSameOrigin } from '../helpers/url'
+import cookie from '../helpers/cookies'
 
 // 所有传入的参数，如：url,method,params,data 都是在这里赋值给原生 xhr 函数
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
   // 其实实现函数 Promise 化不复杂，就是用原生Promise函数就好了😂
   return new Promise((resolve, reject) => {
-    const { data = null, url, method = 'get', headers, responseType, timeout, cancelToken } = config
+    const {
+      data = null,
+      url,
+      method = 'get',
+      headers,
+      responseType,
+      timeout,
+      cancelToken,
+      withCredentials,
+      xsrfCookieName,
+      xsrfHeaderName
+    } = config
 
     const request = new XMLHttpRequest()
 
@@ -18,6 +31,10 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
     // 设置请求超时时间，否则程序默认为无限时间（单位 ms）
     if (timeout) {
       request.timeout = timeout
+    }
+
+    if (withCredentials) {
+      request.withCredentials = withCredentials
     }
 
     // 设置请求方式、请求地址以及是否异步
@@ -60,6 +77,14 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
     request.ontimeout = function handleTimeout() {
       // 这里也没有response
       reject(createError(`Timeout of ${timeout} ms exceeded.`, config, 'ECONNABORTED', request))
+    }
+
+    // XSRF 防御
+    if ((withCredentials || isURLSameOrigin(url!)) && xsrfCookieName) {
+      const xsrfValue = cookie.read(xsrfCookieName)
+      if (xsrfValue && xsrfHeaderName) {
+        headers[xsrfHeaderName] = xsrfValue
+      }
     }
 
     Object.keys(headers).forEach(name => {
