@@ -1,5 +1,5 @@
 import xhr from './xhr'
-import { buildURL } from '../helpers/url'
+import { buildURL, isAbsoluteURL, combieURL } from '../helpers/url'
 import { flattenheaders } from '../helpers/headers'
 // import { transformRequest, transformResponse } from '../helpers/data'
 import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from '../types'
@@ -29,9 +29,15 @@ function processConfig(config: AxiosRequestConfig): void {
 }
 
 // 调用 url.ts 定义好的处理 url 格式函数
-function transformURL(config: AxiosRequestConfig): string {
-  const { url, params } = config
-  return buildURL(url!, params)
+export function transformURL(config: AxiosRequestConfig): string {
+  let { url } = config
+  const { params, paramsSerializer, baseURL } = config
+
+  if (baseURL && !isAbsoluteURL(url!)) {
+    url = combieURL(baseURL, url)
+  }
+
+  return buildURL(url!, params, paramsSerializer)
 }
 
 // 转化需要发送的 data 数据，变成 xhr 发送需要的格式

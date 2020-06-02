@@ -1,5 +1,7 @@
 // 更通用的方法文件
 
+import { type } from 'os'
+
 const toString = Object.prototype.toString
 
 // 判断是否为 Date 类型
@@ -16,6 +18,14 @@ export function isDate(val: any): val is Date {
 
 export function isPlainObject(val: any): val is Object {
   return toString.call(val) === '[object Object]'
+}
+
+export function isFormData(val: any): val is FormData {
+  return typeof val !== 'undefined' && val instanceof FormData
+}
+
+export function isURLSearchParams(val: any): val is URLSearchParams {
+  return typeof val !== 'undefined' && val instanceof URLSearchParams
 }
 
 // 混合类型创建函数
