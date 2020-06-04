@@ -14,7 +14,7 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       data = null,
       url,
       method = 'get',
-      headers,
+      headers = {},
       responseType,
       timeout,
       cancelToken,
@@ -30,7 +30,7 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
     const request = new XMLHttpRequest()
 
     // 设置请求方式、请求地址以及是否异步
-    request.open(method.toUpperCase(), url!, true)
+    request.open(method!.toUpperCase(), url!, true)
 
     // 把每个步骤都单独拎出来成函数，依次执行，逻辑就清晰明了
     // 未来想再添加新功能或者注释掉一些不好的代码也不会让人抓狂了
@@ -75,7 +75,8 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
         }
 
         const responseHeaders = parseHeaders(request.getAllResponseHeaders())
-        const responseData = responseType !== 'text' ? request.response : request.responseText
+        const responseData =
+          responseType && responseType !== 'text' ? request.response : request.responseText
         const response: AxiosResponse = {
           data: responseData,
           status: request.status,

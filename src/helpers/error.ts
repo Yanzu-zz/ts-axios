@@ -15,6 +15,7 @@ export class AxiosError extends Error {
     request?: any,
     response?: AxiosResponse
   ) {
+    /* istanbul ignore next */
     super(message)
 
     this.config = config

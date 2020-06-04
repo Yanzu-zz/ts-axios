@@ -43,16 +43,13 @@ export function parseHeaders(headers: string): any {
 
   // 每一行就是一个对象，我们按照 XXX: YYY 的原始格式进行分割、赋值操作
   headers.split('\r\n').forEach(line => {
-    let [key, val] = line.split(':')
+    let [key, ...vals] = line.split(':')
     key = key.trim().toLowerCase()
     if (!key) {
       return // forEach里面使用 return 相当于 continue 作用
     }
 
-    if (val) {
-      val = val.trim()
-    }
-
+    let val = vals.join(':').trim()
     parsed[key] = val
   })
 
@@ -60,7 +57,7 @@ export function parseHeaders(headers: string): any {
 }
 
 // 处理掉请求前传入的 config 中 headers 里格式不正确的值
-export function flattenheaders(headers: any, method: Method): any {
+export function flattenHeaders(headers: any, method: Method): any {
   if (!headers) {
     return headers
   }

@@ -95,8 +95,8 @@ export function buildURL(
 }
 
 // 拼接 baseURL 和 参数url
-export function combieURL(baseURL: string, relativeURL?: string): string {
-  return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\+/, '') : baseURL
+export function combineURL(baseURL: string, relativeURL?: string): string {
+  return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL
 }
 
 // 判断是否为一个网址

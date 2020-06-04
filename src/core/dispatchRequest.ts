@@ -1,6 +1,6 @@
 import xhr from './xhr'
-import { buildURL, isAbsoluteURL, combieURL } from '../helpers/url'
-import { flattenheaders } from '../helpers/headers'
+import { buildURL, isAbsoluteURL, combineURL } from '../helpers/url'
+import { flattenHeaders } from '../helpers/headers'
 // import { transformRequest, transformResponse } from '../helpers/data'
 import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from '../types'
 import transform from './transform'
@@ -14,9 +14,17 @@ export default function dispatchRequest(config: AxiosRequestConfig): AxiosPromis
 
   // 向服务器发送请求！！！
   // 并且返回的是 AxiosPromise 类型，这样我们的整个函数就实现 Promise 化了
-  return xhr(config).then(res => {
-    return transformResponseData(res)
-  })
+  return xhr(config).then(
+    res => {
+      return transformResponseData(res)
+    },
+    e => {
+      if (e && e.response) {
+        e.response = transformResponseData(e.response)
+      }
+      return Promise.reject(e)
+    }
+  )
 }
 
 // 处理所有 config 的函数
@@ -25,7 +33,7 @@ function processConfig(config: AxiosRequestConfig): void {
   // 需要先处理headers，不然处理data时会把data变成JSON格式，后面逻辑会出错
   // config.headers = processHeaders(config)
   config.data = transform(config.data, config.headers, config.transformRequest)
-  config.headers = flattenheaders(config.headers, config.method!)
+  config.headers = flattenHeaders(config.headers, config.method!)
 }
 
 // 调用 url.ts 定义好的处理 url 格式函数
@@ -34,7 +42,7 @@ export function transformURL(config: AxiosRequestConfig): string {
   const { params, paramsSerializer, baseURL } = config
 
   if (baseURL && !isAbsoluteURL(url!)) {
-    url = combieURL(baseURL, url)
+    url = combineURL(baseURL, url)
   }
 
   return buildURL(url!, params, paramsSerializer)

@@ -1,8 +1,11 @@
+const path = require('path')
 const express = require('express')
 
+const atob = require('atob')
+const webpack = require('webpack')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const webpack = require('webpack')
+const multipart = require('connect-multiparty')
 const webpackDevMiddleware = require('webpack-dev-middleware')
 const webpackHotMiddleware = require('webpack-hot-middleware')
 const WebpackConfig = require('./webpack-config')
@@ -24,7 +27,7 @@ app.use(webpackHotMiddleware(compiler))
 
 // app.use(express.static(__dirname))
 app.use(express.static(__dirname, {
-  setHeaders (res) {
+  setHeaders(res) {
     res.cookie('XSRF-TOKEN-D', '1234abc')
   }
 }))
@@ -35,6 +38,10 @@ app.use(bodyParser.urlencoded({
 }))
 
 app.use(cookieParser())
+
+app.use(multipart({
+  uploadDir: path.resolve(__dirname, 'upload-file')
+}))
 
 
 // 页面路由
@@ -182,5 +189,36 @@ function registerCancelRouter() {
 function registerMoreRouter() {
   router.get('/more/get', function (req, res) {
     res.json(req.cookies)
+  })
+
+  router.post('/more/upload', function (req, res) {
+    console.log(req.body, req.files)
+    res.end('upload success!')
+  })
+
+  router.post('/more/post', function (req, res) {
+    const auth = req.headers.authorization
+    const [type, credentials] = auth.split(' ')
+    console.log(atob(credentials))
+    const [username, password] = atob(credentials).split(':')
+    if (type === 'Basic' && username === 'Yee' && password === '123456') {
+      res.json(req.body)
+    } else {
+      res.status(401)
+      res.end('UnAuthorization')
+    }
+  })
+
+  router.get('/more/304', function(req, res) {
+    res.status(304)
+    res.end()
+  })
+
+  router.get('/more/A', function(req, res) {
+    res.end()
+  })
+
+  router.get('/more/B', function(req, res) {
+    res.end()
   })
 }
